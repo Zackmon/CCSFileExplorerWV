@@ -50,13 +50,13 @@
             this.exportToObjToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractParentNodeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractAllModelsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.extractAsBMPToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.autoRotationOnToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.wireframeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.extractAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fileFormatToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hackGUToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.iMOQFToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.autoRotationOnToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.wireframeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.treeView1 = new System.Windows.Forms.TreeView();
@@ -241,7 +241,7 @@
             // 
             this.extractParentNodeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.extractAllModelsToolStripMenuItem,
-            this.extractAsBMPToolStripMenuItem});
+            this.extractAllTexturesToolStripMenuItem});
             this.extractParentNodeToolStripMenuItem.Name = "extractParentNodeToolStripMenuItem";
             this.extractParentNodeToolStripMenuItem.Size = new System.Drawing.Size(54, 20);
             this.extractParentNodeToolStripMenuItem.Text = "Extract";
@@ -253,38 +253,12 @@
             this.extractAllModelsToolStripMenuItem.Text = "Extract All Models";
             this.extractAllModelsToolStripMenuItem.Click += new System.EventHandler(this.extractAllModelsToolStripMenuItem_Click);
             // 
-            // extractAsBMPToolStripMenuItem
+            // extractAllTexturesToolStripMenuItem
             // 
-            this.extractAsBMPToolStripMenuItem.Name = "extractAsBMPToolStripMenuItem";
-            this.extractAsBMPToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
-            this.extractAsBMPToolStripMenuItem.Text = "Extract All Textures";
-            // 
-            // viewToolStripMenuItem
-            // 
-            this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.autoRotationOnToolStripMenuItem,
-            this.wireframeToolStripMenuItem});
-            this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
-            this.viewToolStripMenuItem.Text = "View";
-            // 
-            // autoRotationOnToolStripMenuItem
-            // 
-            this.autoRotationOnToolStripMenuItem.Checked = true;
-            this.autoRotationOnToolStripMenuItem.CheckOnClick = true;
-            this.autoRotationOnToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.autoRotationOnToolStripMenuItem.Name = "autoRotationOnToolStripMenuItem";
-            this.autoRotationOnToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
-            this.autoRotationOnToolStripMenuItem.Text = "Auto Rotation On";
-            this.autoRotationOnToolStripMenuItem.Click += new System.EventHandler(this.autoRotationOnToolStripMenuItem_Click);
-            // 
-            // wireframeToolStripMenuItem
-            // 
-            this.wireframeToolStripMenuItem.CheckOnClick = true;
-            this.wireframeToolStripMenuItem.Name = "wireframeToolStripMenuItem";
-            this.wireframeToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
-            this.wireframeToolStripMenuItem.Text = "Wireframe";
-            this.wireframeToolStripMenuItem.Click += new System.EventHandler(this.wireframeToolStripMenuItem_Click);
+            this.extractAllTexturesToolStripMenuItem.Name = "extractAllTexturesToolStripMenuItem";
+            this.extractAllTexturesToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+            this.extractAllTexturesToolStripMenuItem.Text = "Extract All Textures";
+            this.extractAllTexturesToolStripMenuItem.Click += new System.EventHandler(this.extractAllTexturesToolStripMenuItem_Click);
             // 
             // fileFormatToolStripMenuItem
             // 
@@ -312,6 +286,33 @@
             this.iMOQFToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.iMOQFToolStripMenuItem.Text = "IMOQF";
             this.iMOQFToolStripMenuItem.Click += new System.EventHandler(this.iMOQFToolStripMenuItem_Click);
+            // 
+            // viewToolStripMenuItem
+            // 
+            this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.autoRotationOnToolStripMenuItem,
+            this.wireframeToolStripMenuItem});
+            this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.viewToolStripMenuItem.Text = "View";
+            // 
+            // autoRotationOnToolStripMenuItem
+            // 
+            this.autoRotationOnToolStripMenuItem.Checked = true;
+            this.autoRotationOnToolStripMenuItem.CheckOnClick = true;
+            this.autoRotationOnToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.autoRotationOnToolStripMenuItem.Name = "autoRotationOnToolStripMenuItem";
+            this.autoRotationOnToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.autoRotationOnToolStripMenuItem.Text = "Auto Rotation On";
+            this.autoRotationOnToolStripMenuItem.Click += new System.EventHandler(this.autoRotationOnToolStripMenuItem_Click);
+            // 
+            // wireframeToolStripMenuItem
+            // 
+            this.wireframeToolStripMenuItem.CheckOnClick = true;
+            this.wireframeToolStripMenuItem.Name = "wireframeToolStripMenuItem";
+            this.wireframeToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.wireframeToolStripMenuItem.Text = "Wireframe";
+            this.wireframeToolStripMenuItem.Click += new System.EventHandler(this.wireframeToolStripMenuItem_Click);
             // 
             // splitContainer1
             // 
@@ -558,7 +559,7 @@
         private System.Windows.Forms.ToolStripMenuItem iMOQFToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem extractParentNodeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem extractAllModelsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem extractAsBMPToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem extractAllTexturesToolStripMenuItem;
     }
 }
 

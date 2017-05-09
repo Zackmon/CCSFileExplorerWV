@@ -446,7 +446,7 @@ namespace CCSFileExplorerWV
         private void extractAllModelsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //FileName Path structure
-            //GameName/CCSFileName/ModelName/
+            //GameName/Models/CCSFileName/ModelName/
             string gameName = "";
 
             if (hackGUToolStripMenuItem.Checked) { gameName = "GU"; }
@@ -481,13 +481,13 @@ namespace CCSFileExplorerWV
                                     if (entryo.blocks[modelFileNode.FirstNode.Index].BlockID == 0xCCCC0800)
                                     {
                                         //Create our directories
-                                        Directory.CreateDirectory("./" + gameName + "/" + ccsFileName + "/" + modelFileNode.Text);
+                                        Directory.CreateDirectory("./" + gameName + "/Models/" + ccsFileName + "/" + modelFileNode.Text);
                                         currModel = (Block0800)entryo.blocks[modelFileNode.FirstNode.Index];
                                         currModel.ProcessData();
                                     
                                         for (int modelIndex = 0; modelIndex < currModel.models.Count; modelIndex++)
                                         {
-                                            string filePath = "./" + gameName + "/" + ccsFileName + "/" + modelFileNode.Text + "/" + modelFileNode.Text + "-" + modelIndex + ".obj";
+                                            string filePath = "./" + gameName + "/Models/" + ccsFileName + "/" + modelFileNode.Text + "/" + modelFileNode.Text + "-" + modelIndex + ".obj";
                                             currModel.SaveModel(Convert.ToInt32(modelIndex) - 1, filePath);
                                         }
                                     }
@@ -500,7 +500,67 @@ namespace CCSFileExplorerWV
 
             }
         }
+        //2017-05-09 #1UP
+        //Added in functionality to extract all textures at once.
+        private void extractAllTexturesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //FileName Path structure
+            //GameName/Textures/CCSFileName/ModelName/
+            string gameName = "";
+            string[] splitTextureName;
+            string textureName = "";
+            PictureBox pct_Temp = new PictureBox();
+            if (hackGUToolStripMenuItem.Checked) { gameName = "GU"; }
+            if (iMOQFToolStripMenuItem.Checked) { gameName = "IMOQ"; }
+            //Loops through the Main parent node (there should really only be one of these).
+            foreach (TreeNode mainNode in treeView1.Nodes)
+            {
+                //This loops through all the child nodes of the main node. ex. s\r\anim\
+                foreach (TreeNode fileNode in mainNode.Nodes)
+                {
+                   
+                    if (fileNode.Text.Contains("tex"))
+                    {
+                        currPalettes = new List<Block>();
+                        currTexture = null;
+                        foreach (ObjectEntry obj in ccsfile.files[fileNode.Index].objects)
+                            foreach (Block b in obj.blocks)
+                            {
+                                if (b.BlockID == 0xCCCC0400)
+                                {
+                                    currPalettes.Add(b);
+                                }
+                                if (b.BlockID == 0xCCCC0300)
+                                    currTexture = b;
+                            }
+                        
+                        if (currPalettes.Count > 0)
+                        {
+                            for (int textureIndex = 0; textureIndex < currPalettes.Count; textureIndex++)
+                            {
+                                //We need to get th name of the texture from the node (the node has \'s in it that we need to split on
+                                splitTextureName = fileNode.Text.ToString().Split('\\');
 
+                                //The texture name is the last one in the array
+                                textureName = splitTextureName[splitTextureName.Length - 1];
 
+                                //We now want to remove the extention
+                                textureName = textureName.Remove(textureName.Length - 4, 3);
+
+                                Directory.CreateDirectory("./" + gameName + "/Textures/" + ccsFileName + "/" + textureName);
+                                string filePath = "./" + gameName + "/Textures/" + ccsFileName + "/" + textureName + "/" +  textureName + "-"+ textureIndex + ".bmp";
+                                pct_Temp.Image = CCSFile.CreateImage(currPalettes[textureIndex].Data, currTexture.Data);
+                           
+                                pct_Temp.Image.Save(@filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                        
+                            }
+                        }
+                    
+                    }
+
+                }
+
+            }
+        }
     }
 }
