@@ -9,21 +9,23 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Be.Windows.Forms;
-
+using System.Collections;
 namespace CCSFileExplorerWV
 {
     public partial class Form1 : Form
     {
         public CCSFile ccsfile;
+        public CCSFile.FileVersionEnum SelectedFileFormat;
         public string lastfolder;
         public List<Block> currPalettes;
         public Block currTexture;
         public Block0800 currModel;
         public float viewRotation = 0;
-
+        public string ccsFileName = "";
         public Form1()
         {
             InitializeComponent();
+            this.SelectedFileFormat = CCSFile.FileVersionEnum.HACK_GU;
             if (tabControl1.TabPages.Contains(tabPage2))
                 tabControl1.TabPages.Remove(tabPage2);
             this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.Opaque, true);
@@ -75,7 +77,8 @@ namespace CCSFileExplorerWV
             d.Filter = "*.ccs|*.ccs";
             if (d.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                ccsfile = new CCSFile(File.ReadAllBytes(d.FileName));
+                ccsfile = new CCSFile(File.ReadAllBytes(d.FileName), SelectedFileFormat);
+                ccsFileName = d.SafeFileName.Remove(d.SafeFileName.Length - 4,4);
                 AddRecent(d.FileName);
                 RefreshStuff();
             }
@@ -92,7 +95,7 @@ namespace CCSFileExplorerWV
             }
             SaveFileDialog d = new SaveFileDialog();
             d.Filter = "*.ccs|*.ccs";
-            d.FileName = ccsfile.header.name + ".ccs";
+            d.FileName = ccsfile.header.Name + ".ccs";
             if (d.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 ccsfile.Save(d.FileName);
@@ -143,7 +146,7 @@ namespace CCSFileExplorerWV
                 d.FileName = entryo.name + ".bin";
                 if (d.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    File.WriteAllBytes(d.FileName, entryo.blocks[sel.Index].data);
+                    File.WriteAllBytes(d.FileName, entryo.blocks[sel.Index].Data);
                     MessageBox.Show("Done.");
                 }
             }
@@ -155,7 +158,7 @@ namespace CCSFileExplorerWV
             treeView1.Nodes.Clear();
             if (!ccsfile.isvalid)
                 return;
-            TreeNode t = new TreeNode(ccsfile.header.name);
+            TreeNode t = new TreeNode(ccsfile.header.Name);
             foreach (FileEntry entry in ccsfile.files)
                 t.Nodes.Add(entry.ToNode());
             t.Expand();
@@ -181,8 +184,8 @@ namespace CCSFileExplorerWV
                 TreeNode file = obj.Parent;
                 FileEntry entryf = ccsfile.files[file.Index];
                 ObjectEntry entryo = entryf.objects[obj.Index];
-                hb1.ByteProvider = new DynamicByteProvider(entryo.blocks[sel.Index].data);
-                if (entryo.blocks[sel.Index].type == 0xCCCC0800)
+                hb1.ByteProvider = new DynamicByteProvider(entryo.blocks[sel.Index].FullBlockData);
+                if (entryo.blocks[sel.Index].BlockID == 0xCCCC0800)
                 {
                     currModel = (Block0800)entryo.blocks[sel.Index];
                     currModel.ProcessData();
@@ -210,12 +213,12 @@ namespace CCSFileExplorerWV
                         foreach (ObjectEntry obj in ccsfile.files[sel.Index].objects)
                             foreach (Block b in obj.blocks)
                             {
-                                if (b.type == 0xCCCC0400)
+                                if (b.BlockID == 0xCCCC0400)
                                 {
                                     comboBox1.Items.Add(obj.name);
                                     currPalettes.Add(b);
                                 }
-                                if (b.type == 0xCCCC0300)
+                                if (b.BlockID == 0xCCCC0300)
                                     currTexture = b;
                             }
                         if (comboBox1.Items.Count > 0)
@@ -235,7 +238,7 @@ namespace CCSFileExplorerWV
             int n = comboBox1.SelectedIndex;
             if (n == -1 || currTexture == null || currPalettes == null || currPalettes.Count == 0)
                 return;
-            pic1.Image = CCSFile.CreateImage(currPalettes[n].data, currTexture.data);
+            pic1.Image = CCSFile.CreateImage(currPalettes[n].Data, currTexture.Data);
         }
 
         private void importRawToolStripMenuItem_Click(object sender, EventArgs e)
@@ -253,7 +256,7 @@ namespace CCSFileExplorerWV
                 d.Filter = "*.bin|*.bin";
                 if (d.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    entryo.blocks[sel.Index].data = File.ReadAllBytes(d.FileName);
+                    entryo.blocks[sel.Index].Data = File.ReadAllBytes(d.FileName);
                     ccsfile.Rebuild();
                     ccsfile.Reload();
                     RefreshStuff();
@@ -298,8 +301,8 @@ namespace CCSFileExplorerWV
                 TreeNode file = obj.Parent;
                 FileEntry entryf = ccsfile.files[file.Index];
                 ObjectEntry entryo = entryf.objects[obj.Index];
-                hb1.ByteProvider = new DynamicByteProvider(entryo.blocks[sel.Index].data);
-                if (entryo.blocks[sel.Index].type == 0xCCCC0800)
+                hb1.ByteProvider = new DynamicByteProvider(entryo.blocks[sel.Index].FullBlockData);
+                if (entryo.blocks[sel.Index].BlockID == 0xCCCC0800)
                 {
                     Block0800 mdl = (Block0800)entryo.blocks[sel.Index];
                     mdl.ProcessData();
@@ -308,7 +311,7 @@ namespace CCSFileExplorerWV
                     d.FileName = obj.Text + ".obj";
                     if (d.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                     {
-                        string input = Microsoft.VisualBasic.Interaction.InputBox("Which Model to export? (1 - " + (mdl.models.Count) + ")", "Export Model", (comboBox2.SelectedIndex + 1).ToString());
+                        string input = Microsoft.VisualBasic.Interaction.InputBox("Which Model to export? (1 - " + (mdl.models.Count) + "). Input 0 to export all.", "Export Model", (comboBox2.SelectedIndex + 1).ToString());
                         if (input != "")
                         {
                             mdl.SaveModel(Convert.ToInt32(input) - 1, d.FileName);
@@ -316,6 +319,10 @@ namespace CCSFileExplorerWV
                         }
                     }
                 }
+            }
+            else if (sel.Level == 1)
+            {
+                
             }
         }
 
@@ -392,7 +399,7 @@ namespace CCSFileExplorerWV
 
         public void recentClick(object sender, EventArgs e)
         {
-            ccsfile = new CCSFile(File.ReadAllBytes(((ToolStripMenuItem)sender).Text));
+            ccsfile = new CCSFile(File.ReadAllBytes(((ToolStripMenuItem)sender).Text), this.SelectedFileFormat);
             RefreshStuff();
         }
 
@@ -413,6 +420,135 @@ namespace CCSFileExplorerWV
         private void wireframeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SceneHelper.wireframe = wireframeToolStripMenuItem.Checked;
+        }
+
+        private void hackGUToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            hackGUToolStripMenuItem.Checked = true;
+            iMOQFToolStripMenuItem.Checked = false;
+            this.SelectedFileFormat = CCSFile.FileVersionEnum.HACK_GU;
+            if (ccsfile != null)
+                ccsfile.FileVersion = SelectedFileFormat;
+        }
+
+        private void iMOQFToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            hackGUToolStripMenuItem.Checked = false;
+            iMOQFToolStripMenuItem.Checked = true;
+            this.SelectedFileFormat = CCSFile.FileVersionEnum.IMOQF;
+            if (ccsfile != null)
+                ccsfile.FileVersion = SelectedFileFormat;
+        }
+
+   
+        //2017-05-09 #1UP
+        //Added in functionality to extract all models at once.
+        private void extractAllModelsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //FileName Path structure
+            //GameName/CCSFileName/ModelName/
+            string gameName = "";
+
+            if (hackGUToolStripMenuItem.Checked) { gameName = "GU"; }
+            if (iMOQFToolStripMenuItem.Checked) { gameName = "IMOQ"; }
+
+            //Loops through the Main parent node (there should really only be one of these).
+            foreach (TreeNode mainNode in treeView1.Nodes)
+            {
+                //This loops through all the child nodes of the main node. ex. s\r\anim\
+                foreach(TreeNode fileNode in mainNode.Nodes)
+                {
+                    //We want to skip over any fileNode that contains anim since those are animations (may come back to this later for a different extraction method)
+                    //The texture files are in the files that end in .max however the anim files also have this extention so we must check for that.
+                    if(!fileNode.Text.Contains("anim"))
+                    {
+                        if(fileNode.Text.Contains(".max"))
+                        {
+                            //We want to go through all the nodes and check for files that contain MDL since those are our model files.
+                            //We need to make sure that the modelFileName also has a child node because there are MDLs without children. These are apart of a list for
+                            //a model. These can be skipped over.
+                            foreach (TreeNode modelFileNode in fileNode.Nodes)
+                            {
+                                if(modelFileNode.Text.Contains("MDL") && modelFileNode.Nodes.Count != 0)
+                                {
+                                    //This is where we are going to start exporting our files.
+                                    //We now have the ModelFileName and now we just have to get the child  Node
+                                    //We also need to update the dropdown so it grabs all the models as a list. This is currently in a massive chunk of code that needs
+                                    //to be broken up.
+                                    FileEntry entryf = ccsfile.files[fileNode.Index];
+                                    ObjectEntry entryo = entryf.objects[modelFileNode.Index];
+                                    hb1.ByteProvider = new DynamicByteProvider(entryo.blocks[modelFileNode.FirstNode.Index].FullBlockData);
+                                    if (entryo.blocks[modelFileNode.FirstNode.Index].BlockID == 0xCCCC0800)
+                                    {
+                                        //Create our directories
+                                        Directory.CreateDirectory("./" + gameName + "/" + ccsFileName + "/" + modelFileNode.Text);
+                                        currModel = (Block0800)entryo.blocks[modelFileNode.FirstNode.Index];
+                                        currModel.ProcessData();
+                                    
+                                        for (int modelIndex = 0; modelIndex < currModel.models.Count; modelIndex++)
+                                        {
+                                            string filePath = "./" + gameName + "/" + ccsFileName + "/" + modelFileNode.Text + "/" + modelFileNode.Text + "-" + modelIndex + ".obj";
+                                            currModel.SaveModel(Convert.ToInt32(modelIndex) - 1, filePath);
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+
+
+
+        private void extractAsObjToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //Check to make sure something was selected
+            TreeNode selectedTreeNode = treeView1.SelectedNode;
+
+            string gameName = "";
+
+            if (hackGUToolStripMenuItem.Checked) { gameName = "GU"; }
+            if (iMOQFToolStripMenuItem.Checked) { gameName = "IMOQ"; }
+
+            if (selectedTreeNode == null)
+            {
+                MessageBox.Show("Please select a parent model node!");
+
+            }
+            else
+            {
+                //Use the model name as the folder Name
+                string treeNodeName = selectedTreeNode.Text;
+
+                //Create our directories
+                Directory.CreateDirectory("./" + gameName + "/" + ccsFileName + "/" + treeNodeName);
+
+                foreach (TreeNode node in selectedTreeNode.Nodes)
+                {
+                    FileEntry entryf = ccsfile.files[selectedTreeNode.Parent.Index];
+                    ObjectEntry entryo = entryf.objects[selectedTreeNode.Index];
+                    hb1.ByteProvider = new DynamicByteProvider(entryo.blocks[node.Index].FullBlockData);
+
+                    if (entryo.blocks[node.Index].BlockID == 0xCCCC0800)
+                    {
+                        Block0800 mdl = (Block0800)entryo.blocks[node.Index];
+                        mdl.ProcessData();
+
+                        for (Int32 modelIndex = 0; modelIndex < comboBox2.Items.Count; modelIndex++)
+                        {
+                            mdl.SaveModel(Convert.ToInt32(modelIndex) - 1, "./" + gameName + "/" + ccsFileName + "/" + treeNodeName + "/" + treeNodeName + "-" + modelIndex + ".obj");
+                        }
+
+
+                    }
+                }
+            }
+
+
         }
     }
 }
