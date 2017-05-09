@@ -502,53 +502,5 @@ namespace CCSFileExplorerWV
         }
 
 
-
-
-        private void extractAsObjToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //Check to make sure something was selected
-            TreeNode selectedTreeNode = treeView1.SelectedNode;
-
-            string gameName = "";
-
-            if (hackGUToolStripMenuItem.Checked) { gameName = "GU"; }
-            if (iMOQFToolStripMenuItem.Checked) { gameName = "IMOQ"; }
-
-            if (selectedTreeNode == null)
-            {
-                MessageBox.Show("Please select a parent model node!");
-
-            }
-            else
-            {
-                //Use the model name as the folder Name
-                string treeNodeName = selectedTreeNode.Text;
-
-                //Create our directories
-                Directory.CreateDirectory("./" + gameName + "/" + ccsFileName + "/" + treeNodeName);
-
-                foreach (TreeNode node in selectedTreeNode.Nodes)
-                {
-                    FileEntry entryf = ccsfile.files[selectedTreeNode.Parent.Index];
-                    ObjectEntry entryo = entryf.objects[selectedTreeNode.Index];
-                    hb1.ByteProvider = new DynamicByteProvider(entryo.blocks[node.Index].FullBlockData);
-
-                    if (entryo.blocks[node.Index].BlockID == 0xCCCC0800)
-                    {
-                        Block0800 mdl = (Block0800)entryo.blocks[node.Index];
-                        mdl.ProcessData();
-
-                        for (Int32 modelIndex = 0; modelIndex < comboBox2.Items.Count; modelIndex++)
-                        {
-                            mdl.SaveModel(Convert.ToInt32(modelIndex) - 1, "./" + gameName + "/" + ccsFileName + "/" + treeNodeName + "/" + treeNodeName + "-" + modelIndex + ".obj");
-                        }
-
-
-                    }
-                }
-            }
-
-
-        }
     }
 }
